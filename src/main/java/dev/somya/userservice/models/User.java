@@ -14,7 +14,7 @@ import java.util.Set;
 @Entity
 @Getter
 @Setter
-public class User extends BaseModel{
+public class User extends BaseModel {
     private String email;
     private String password;
     @ManyToMany

@@ -12,7 +12,7 @@ import java.util.Date;
 @Entity
 @Getter
 @Setter
-public class Session extends BaseModel{
+public class Session extends BaseModel {
     private String token;
     private Date expiringAt;
     @ManyToOne
@@ -20,3 +20,4 @@ public class Session extends BaseModel{
     @Enumerated(EnumType.ORDINAL)
     private SessionStatus sessionStatus;
 }
+
