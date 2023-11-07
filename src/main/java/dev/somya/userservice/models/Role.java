@@ -8,5 +8,5 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Role extends BaseModel {
-    private String role;
+    private String role_name;
 }

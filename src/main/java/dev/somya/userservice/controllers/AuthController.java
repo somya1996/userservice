@@ -29,13 +29,12 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<UserDto> signUp(@RequestBody SignUpRequestDto request) {
-        UserDto userDto = authService.signUp(request.getEmail(), request.getPassword());
-        return new ResponseEntity<>(userDto, HttpStatus.OK);
+        return authService.signUp(request.getEmail(), request.getPassword() , request.getName() , request.getPhone());
     }
 
     @PostMapping("/validate")
     public ResponseEntity<SessionStatus> validateToken(ValidateTokenRequestDto request){
-        SessionStatus sessionStatus = authService.validate(request.getToken(), request.getUserId());
+        SessionStatus sessionStatus = authService.validate(request.getUserId() , request.getToken());
         return new ResponseEntity<>(sessionStatus, HttpStatus.OK);
     }
 
