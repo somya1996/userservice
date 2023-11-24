@@ -36,26 +36,26 @@ public class AuthService {
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
-     public ResponseEntity<UserDto> login(String email , String password){
-         Optional<User> userOptional = userRepository.findByEmail(email);
-         if(userOptional.isEmpty()){
-             return null;
-         }
+    public ResponseEntity<UserDto> login(String email , String password){
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        if(userOptional.isEmpty()){
+            return null;
+        }
 
-         /**    Using BCrypt to encode the password */
-         User user = userOptional.get();
-         if(!bCryptPasswordEncoder.matches(password , user.getPassword())){
-             throw new RuntimeException("Wrong username password");
+        /**    Using BCrypt to encode the password */
+        User user = userOptional.get();
+        if(!bCryptPasswordEncoder.matches(password , user.getPassword())){
+            throw new RuntimeException("Wrong username password");
 //             return null;
-         }
+        }
 
 
 
-         /**    Creating jjwt   */
-         // String token = RandomStringUtils.randomAlphanumeric(30);
-         // Create a test key suitable for the desired HMAC-SHA algorithm:
-         MacAlgorithm alg = Jwts.SIG.HS256; //or HS384 or HS256
-         SecretKey key = alg.key().build();
+        /**    Creating jjwt   */
+        // String token = RandomStringUtils.randomAlphanumeric(30);
+        // Create a test key suitable for the desired HMAC-SHA algorithm:
+        MacAlgorithm alg = Jwts.SIG.HS256; //or HS384 or HS256
+        SecretKey key = alg.key().build();
 
 //         String message = "{\n" +
 //                 "  \"email\": \"naman@gmail.com\",\n" +
@@ -75,43 +75,43 @@ public class AuthService {
 //
 //         assert message.equals(new String(content, StandardCharsets.UTF_8));
 
-         /** Creating compact token which will be easy to understand */
-         Map<String , Object> jsonFromJwt = new HashMap<>();
-         jsonFromJwt.put("email" , user.getEmail());
-         jsonFromJwt.put("role" , user.getRoles());
-         jsonFromJwt.put("createdAt" , new Date());
-         jsonFromJwt.put("expiryAt" , new Date(LocalDate.now().plusDays(3).toEpochDay()));
+        /** Creating compact token which will be easy to understand */
+        Map<String , Object> jsonFromJwt = new HashMap<>();
+        jsonFromJwt.put("email" , user.getEmail());
+        jsonFromJwt.put("role" , user.getRoles());
+        jsonFromJwt.put("createdAt" , new Date());
+        jsonFromJwt.put("expiryAt" , new Date(LocalDate.now().plusDays(3).toEpochDay()));
 
-         String token = Jwts.builder()
-                 .claims(jsonFromJwt)
-                 .signWith(key , alg)
-                 .compact();
+        String token = Jwts.builder()
+                .claims(jsonFromJwt)
+                .signWith(key , alg)
+                .compact();
 
-         Session session = new Session();
+        Session session = new Session();
 //       session.setToken(jws);
-         session.setToken(token);
-         session.setExpiringAt(new Date(LocalDate.now().plusDays(2).toEpochDay()));
-         session.setUser(user);
-         session.setSessionStatus(SessionStatus.ACTIVE);
-         sessionRepository.save(session);
+        session.setToken(token);
+        session.setExpiringAt(new Date(LocalDate.now().plusDays(2).toEpochDay()));
+        session.setUser(user);
+        session.setSessionStatus(SessionStatus.ACTIVE);
+        sessionRepository.save(session);
 
-         /** USED TO SET HEADERS */
+        /** USED TO SET HEADERS */
 //       Map<String , String> headers = new HashMap<>();
 //       headers.put(HttpHeaders.SET_COOKIE , token);
-         UserDto userDto = UserDto.from(user);
-         MultiValueMapAdapter<String , String> headers = new MultiValueMapAdapter<>(new HashMap<>());
+        UserDto userDto = UserDto.from(user);
+        MultiValueMapAdapter<String , String> headers = new MultiValueMapAdapter<>(new HashMap<>());
 //       headers.add(HttpHeaders.SET_COOKIE, "auth-token:" + jws);
-         headers.add(HttpHeaders.SET_COOKIE , "auth-token:" + token);
+        headers.add(HttpHeaders.SET_COOKIE , "auth-token:" + token);
 
-         /**RESPONSE ENTITY Implementation */
-         ResponseEntity<UserDto> response = new ResponseEntity<>(userDto , headers , HttpStatus.OK);
+        /**RESPONSE ENTITY Implementation */
+        ResponseEntity<UserDto> response = new ResponseEntity<>(userDto , headers , HttpStatus.OK);
 //       response.getHeaders().add(HttpHeaders.SET_COOKIE , token);
-         return response;
-     }
+        return response;
+    }
 
 
-     /** LOGOUT */
-     public ResponseEntity<Void> logout(String token , Long userId){
+    /** LOGOUT */
+    public ResponseEntity<Void> logout(String token , Long userId){
         Optional<Session> sessionOptional = sessionRepository.findByTokenAndUserId(token, userId);
         if(sessionOptional.isEmpty()){
             return null;
@@ -120,36 +120,36 @@ public class AuthService {
         session.setSessionStatus(SessionStatus.ENDED);
         sessionRepository.save(session);
         return ResponseEntity.ok().build();
-     }
+    }
 
-     /** SIGNUP */
-     public ResponseEntity<UserDto> signUp(String email , String password , String name , Long phone){
-         // To check that email is different from the existing one
-         Optional<User> userOptional = userRepository.findByEmail(email);
+    /** SIGNUP */
+    public ResponseEntity<UserDto> signUp(String email , String password , String name , Long phone){
+        // To check that email is different from the existing one
+        Optional<User> userOptional = userRepository.findByEmail(email);
 
-         //To set Header to get what problem is there
-         MultiValueMapAdapter<String , String> headers = new MultiValueMapAdapter<>(new HashMap<>());
+        //To set Header to get what problem is there
+        MultiValueMapAdapter<String , String> headers = new MultiValueMapAdapter<>(new HashMap<>());
 
-         if(!userOptional.isEmpty()){
-             headers.add(HttpHeaders.SET_COOKIE , "message:Email already exists");
-             return new ResponseEntity<>(null , headers , HttpStatus.BAD_REQUEST);
-         }
-         User user = new User();
-         user.setEmail(email);
-         user.setPassword(bCryptPasswordEncoder.encode(password));
-         user.setName(name);
-         user.setPhone(phone);
-         User savedUser = userRepository.save(user);
+        if(!userOptional.isEmpty()){
+            headers.add(HttpHeaders.SET_COOKIE , "message:Email already exists");
+            return new ResponseEntity<>(null , headers , HttpStatus.BAD_REQUEST);
+        }
+        User user = new User();
+        user.setEmail(email);
+        user.setPassword(bCryptPasswordEncoder.encode(password));
+        user.setName(name);
+        user.setPhone(phone);
+        User savedUser = userRepository.save(user);
 
 
-         headers.add(HttpHeaders.SET_COOKIE , "message" + savedUser.getId());
+        headers.add(HttpHeaders.SET_COOKIE , "message" + savedUser.getId());
 
-         UserDto savedUserDto = UserDto.from(savedUser);
-         return new ResponseEntity<>(savedUserDto , headers , HttpStatus.OK);
-     }
+        UserDto savedUserDto = UserDto.from(savedUser);
+        return new ResponseEntity<>(savedUserDto , headers , HttpStatus.OK);
+    }
 
-     /** VALIDATE TOKEN */
-     public SessionStatus validate(Long userId, String token ){
+    /** VALIDATE TOKEN */
+    public SessionStatus validate(Long userId, String token ){
         Optional<Session> sessionOptional = sessionRepository.findByTokenAndUserId(token, userId);
         if(sessionOptional.isEmpty()){
             return SessionStatus.NOT_EXISTS;
@@ -159,9 +159,9 @@ public class AuthService {
         if(!session.getSessionStatus().equals(SessionStatus.ACTIVE)){
             return SessionStatus.ENDED;
         }
-         Jws<Claims> claimsJws = Jwts.parser()
-                                     .build()
-                                     .parseSignedClaims(token);
+        Jws<Claims> claimsJws = Jwts.parser()
+                .build()
+                .parseSignedClaims(token);
 
         String email = (String)claimsJws.getPayload().get("email");
         List<Role> roles = (List<Role>)claimsJws.getPayload().get("role");
@@ -172,7 +172,7 @@ public class AuthService {
             return SessionStatus.ENDED;
 
         return SessionStatus.ACTIVE;
-     }
+    }
 }
 //Before using setting JJwt
 //auth-token%3AeyJjdHkiOiJ0ZXh0L3BsYWluIiwiYWxnIjoiSFMyNTYifQ.ewogICJlbWFpbCI6ICJuYW1hbkBnbWFpbC5jb20iLAogICJyb2xlcyI6IFsKICAgICAibWVudG9yIiAsCiAgICAgInRhIgogICAgIF0sCiAgImV4cGlyYXRpb25EYXRlIjogIjIzT2N0b2JlcjIwMjMiCn0.yMCFy7FyBDwGLPdPrTJkCvoEZF6-7FnO40cgBtea8Us
