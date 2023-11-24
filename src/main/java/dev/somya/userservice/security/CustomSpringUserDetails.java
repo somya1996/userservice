@@ -29,6 +29,7 @@ public class CustomSpringUserDetails implements UserDetails, Serializable {
     }
 
     @Override
+    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<CustomSpringGrantedAuthority> customSpringGrantedAuthorities = new ArrayList<>();
 
